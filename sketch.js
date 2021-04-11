@@ -37,15 +37,15 @@ class hex{
   }
   show(){
     if(this.isObstruction == true){
-      fill('rgba(255,255,255,1)');
+      fill('rgba(0,0,0,1)');
       polygon(this.x, this.y, size, 6);
     }else{
       if(this.isParent == true){
-        fill('rgba(255,128,0,1)');
+        fill('rgba(0,255,0,1)');
         polygon(this.x, this.y, size, 6);
       }else{
         if(this.isCurrent == true){
-          fill('rgba(204,0,204,1)');
+          fill('rgba(255,0,255,1)');
           polygon(this.x, this.y, size, 6);
         }else{
           if (this.isStart == true){
@@ -61,7 +61,7 @@ class hex{
                 polygon(this.x, this.y, size, 6);
               }else{
                 if(this.open == true){
-                  fill('rgba(0,255,0,1)')
+                  fill('rgba(255,128,0,1)')
                   polygon(this.x, this.y, size, 6);
                 }else{
                   fill('rgba(0,0,255,1)')
