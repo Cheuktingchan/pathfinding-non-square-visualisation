@@ -231,7 +231,7 @@ function draw() {
         //try{
           theGrid.updateCurrent();
           theGrid.removeCurrent();
-          console.log(theGrid.hexesOpen);
+          //console.log(theGrid.hexesOpen);
           //console.log(theGrid.hexesClosed);
         }
         //catch(TypeError){
@@ -261,7 +261,7 @@ function saveStartEnd(){
   }else{
     end = createVector((0.5 * w) + eX * w ,eY * h * 0.75);
     }
-  console.log(start)
+  //console.log(start)
   
   theGrid = new hexGrid();
   for (i = 0; i < canvasDiag; i++){
