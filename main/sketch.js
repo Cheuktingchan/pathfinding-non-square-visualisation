@@ -1,18 +1,70 @@
 size = 20;
 w = size * Math.sqrt(3);
 h = size * 2;
-canvasDiag = 20;
+canvasDiag = 30;
+var startClicked = false;
+var started = false;
 
 class hex{
-  constructor(x,y,size){
+  constructor(row,col,x,y,size){
+    this.row = row;
+    this.col = col;
     this.x = x;
     this.y = y;
+    this.pos = createVector(this.x,this.y);
     this.size = size;
+    this.open = false;
+    this.closed = false;
+    if (this.row == 0 || this.row == canvasDiag - 1 || this.col == 0 || this.col == canvasDiag - 1){
+      this.isObstruction = true;
+    }else{
+      this.isObstruction = false;
+    }
+    this.isStart = false;
+    this.isEnd = false;
+    this.isCurrent = false;
+    this.gcost = start.dist(this.pos);
+    this.hcost = end.dist(this.pos);
+    this.fcost = this.hcost + this.gcost;
+  }
+  calculateCost(){//for the accurate A* - distance must be updated by path of lowest cost
+    this.gcost = p5.Vector.sub(this.pos,start).mag();
+    this.hcost = p5.Vector.sub(this.pos,end).mag();
+    this.fcost = this.hcost + this.gcost;
   }
   show(){
-    fill('rgba(0,255,0, 0.1)');
-    //rect(this.x, this.y, w, h)
-    polygon(this.x, this.y, size, 6);
+    if(this.isObstruction == true){
+      fill('rgba(255,255,255,1)');
+      polygon(this.x, this.y, size, 6);
+    }else{
+      if(this.isCurrent == true){
+        fill('rgba(204,0,204,1)');
+        polygon(this.x, this.y, size, 6);
+      }else{
+        if (this.isStart == true){
+          fill('rgba(0,255,255,1)');
+          polygon(this.x, this.y, size, 6);
+        }else{
+          if (this.isEnd == true){
+            fill('rgba(255,255,0,1)');
+            polygon(this.x, this.y, size, 6);
+          }else{
+            if(this.closed == true){
+              fill('rgba(255,0,0,1)');
+              polygon(this.x, this.y, size, 6);
+            }else{
+              if(this.open == true){
+                fill('rgba(0,255,0,1)')
+                polygon(this.x, this.y, size, 6);
+              }else{
+                fill('rgba(0,0,255,1)')
+                polygon(this.x, this.y, size, 6);
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -22,31 +74,189 @@ class hexGrid{
     for (var i = 0; i < canvasDiag; i++){
       this.hexes[i] = [];
     }
+    this.hexesOpen = [];
+    this.hexesClosed = [];
+    this.current = new hex(0,0,0,0);
   }
   newHex(row,col,tempX,tempY,tempSize){
-    var hexSing = new hex(tempX,tempY,tempSize);
-    this.hexes[row][col] = hexSing;
-    this.hexes[row][col].show();
+    var hexSingular = new hex(row,col,tempX,tempY,tempSize);
+    this.hexes[row][col] = hexSingular;
+  }
+  openHex(row,col){
+    this.hexes[row][col].open = true;
+  }
+  closeHex(row,col){
+    this.hexes[row][col].open = false;
+    this.hexes[row][col].closed = true;
+  }
+  updateCurrent(){ //removes and from open and closes it
+    var lowestfcost = this.hexesOpen[0].fcost;
+    this.current = this.hexesOpen[0];
+    for (var i = 0; i < this.hexesOpen.length; i++){
+      if (this.hexesOpen[i].fcost < lowestfcost){
+        lowestfcost = this.hexesOpen[i].fcost;
+        this.current = this.hexesOpen[i];
+      }
+    }
+    this.hexesClosed.push(this.current);
+    var indexCuInHexes = this.hexes.indexOf(this.current);
+    this.hexes[this.current.row][this.current.col].closed = true;
+    this.hexes[this.current.row][this.current.col].open = false;
+    //var indexCuInOpen = this.hexesOpen.indexOf(this.current);
+    //this.hexesOpen.splice(indexCuInOpen,1);
+    this.hexes[this.current.row][this.current.col].isCurrent = false;
+    var neighbours = [];
+    if (this.current.col % 2 == 0){
+      neighbours.push(this.hexes[this.current.row - 1][this.current.col - 1]);
+      neighbours.push(this.hexes[this.current.row][this.current.col - 1]);
+      neighbours.push(this.hexes[this.current.row - 1][this.current.col]);
+      neighbours.push(this.hexes[this.current.row + 1][this.current.col]);
+      neighbours.push(this.hexes[this.current.row - 1][this.current.col + 1]);
+      neighbours.push(this.hexes[this.current.row][this.current.col + 1]);
+        }else{
+          neighbours.push(this.hexes[this.current.row][this.current.col - 1]);
+          neighbours.push(this.hexes[this.current.row + 1][this.current.col - 1]);
+          neighbours.push(this.hexes[this.current.row - 1][this.current.col]);
+          neighbours.push(this.hexes[this.current.row + 1][this.current.col]);
+          neighbours.push(this.hexes[this.current.row][this.current.col + 1]);
+          neighbours.push(this.hexes[this.current.row + 1][this.current.col + 1]);
+        }
+    for (var n = 0; n < neighbours.length; n++){
+      if (this.hexesOpen.includes(neighbours[n]) || this.hexesClosed.includes(neighbours[n])){
+      }else{
+        this.hexesOpen.push(neighbours[n]);
+        this.hexes[neighbours[n].row][neighbours[n].col].open = true;
+      }
+    }
+    for (i = 0; i < canvasDiag; i++){
+      for (j = 0; j <canvasDiag; j++){
+        this.hexes[i][j].isCurrent = false;
+      }
+    }
+    this.hexes[this.current.row][this.current.col].isCurrent = true;
+  }
+  removeCurrent(){
+    if (this.hexesClosed.includes(this.current)){
+      var indexCuInOpen = this.hexesOpen.indexOf(this.current);
+      this.hexesOpen.splice(indexCuInOpen,1)
+      this.hexes[this.current.row][this.current.col].open = false;
+    }
+  }
+  createObstruction(){
+    var mouseVector = createVector(mouseX,mouseY);
+    var closestHexRow = 0;
+    var closestHexCol = 0;
+    var lowestdist = 100;
+    for (i = 0; i < canvasDiag; i++){
+      for (j = 0; j <canvasDiag; j++){
+        if(this.hexes[i][j].isObstruction == true){
+          this.hexesClosed.push(this.hexes[i][j])
+        }
+        var tempDist = this.hexes[i][j].pos.dist(mouseVector);
+        if (tempDist < lowestdist){
+          lowestdist = tempDist;
+          closestHexRow = this.hexes[i][j].row;
+          closestHexCol = this.hexes[i][j].col;
+        }
+      }
+    }
+    this.hexes[closestHexRow][closestHexCol].isObstruction = true;
+    this.hexesClosed.push(this.hexes[closestHexRow][closestHexCol]);
   }
 }
   
 
 function setup() {
-  createCanvas(800, 800);
-  theGrid = new hexGrid();
+  createCanvas(windowWidth, windowHeight);
+  startButton = createButton("SOLVE");
+  startButton.size(100,100);
+  startButton.position(windowWidth - 100,0);
+  startButton.mousePressed(startPressed);
+  startX = createInput('start x coord')
+  startX.position(windowWidth - 500,0)
+  startY = createInput('start y coord')
+  startY.position(windowWidth - 500, 50)
+  endX = createInput('end x coord');
+  endX.position(windowWidth - 500, 200);
+  endY = createInput('end y coord');
+  endY.position(windowWidth - 500, 250);
+  submitButton = createButton('submit');
+  submitButton.position( windowWidth - 500, 300);
+  submitButton.mousePressed(saveStartEnd);
+  frameRate(60);
+  //start = createVector(2 * w,2 * h * 0.75);//remember the positions are shifted if odd - use odd formula.
+  //end = createVector((0.5 * w) + 25 * w ,25 * h * 0.75);
+  
 }
 
 function draw() {
   background(220);
+  if (started == true){
+    for (i = 0; i < canvasDiag; i++){
+      for (j = 0; j <canvasDiag; j++){
+        theGrid.hexes[i][j].show();
+      }
+    }
+    if(mouseIsPressed){
+      theGrid.createObstruction()
+      }
+    if (frameCount % 2 == 1 && startClicked == true){ //to delay this function so that start is in open
+      if(theGrid.current.isEnd == false){
+        try{
+          theGrid.updateCurrent();
+          theGrid.removeCurrent();
+          console.log(theGrid.hexesOpen);
+          //console.log(theGrid.hexesClosed);
+        }
+        catch(TypeError){
+          console.log("theres been TypeError")
+        }
+
+      }
+    }
+  }
+}
+
+function startPressed(){
+  startClicked = true;
+}
+function saveStartEnd(){
+  const sX = int(startX.value());
+  const sY = int(startY.value());
+  const eX = int(endX.value());
+  const eY = int(endY.value());
+  if (sY % 2 == 0){
+    start = createVector(sX * w,sY * h * 0.75);
+  }else{
+    start = createVector((0.5 * w) + sX * w ,sY * h * 0.75);
+    }
+  if (eY % 2 == 0){
+    end = createVector(eX * w,eY * h * 0.75);
+  }else{
+    end = createVector((0.5 * w) + eX * w ,eY * h * 0.75);
+    }
+  console.log(start)
+  
+  theGrid = new hexGrid();
   for (i = 0; i < canvasDiag; i++){
     for (j = 0; j <canvasDiag; j++){
       if (j % 2 == 0){
-        theGrid.newHex(i, j, i * w, j * h * 0.75, w, h)
+        theGrid.newHex(i, j, i * w, j * h * 0.75, w, h);
           }else{
-            theGrid.newHex(i, j, (0.5 * w) + i * w, j * h * 0.75, w, h)
+            theGrid.newHex(i, j, (0.5 * w) + i * w, j * h * 0.75, w, h);
+          }
+      if (theGrid.hexes[i][j].pos.equals(start)){
+        theGrid.hexes[i][j].isStart = true;
+        theGrid.hexes[i][j].open = true;
+        theGrid.hexesOpen[0] = theGrid.hexes[i][j];
+        }else{
+          if (theGrid.hexes[i][j].pos.equals(end)){
+            theGrid.hexes[i][j].isEnd = true;
+            }
           }
     }
   }
+  started = true;
 }
 
 function polygon(x, y, radius, npoints) {
