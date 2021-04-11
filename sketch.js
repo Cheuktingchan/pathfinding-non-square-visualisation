@@ -11,6 +11,8 @@ class hex{
     this.col = col;
     this.x = x;
     this.y = y;
+    this.parentList = [];
+    this.lastParent = 0;
     this.pos = createVector(this.x,this.y);
     this.size = size;
     this.open = false;
@@ -20,6 +22,7 @@ class hex{
     }else{
       this.isObstruction = false;
     }
+    this.isParent = false;
     this.isStart = false;
     this.isEnd = false;
     this.isCurrent = false;
@@ -27,7 +30,7 @@ class hex{
     this.hcost = end.dist(this.pos);
     this.fcost = this.hcost + this.gcost;
   }
-  calculateCost(){//for the accurate A* - distance must be updated by path of lowest cost
+  calculateCost(){//for the accurate A* - distance must be updated by path of lowest cost real value
     this.gcost = p5.Vector.sub(this.pos,start).mag();
     this.hcost = p5.Vector.sub(this.pos,end).mag();
     this.fcost = this.hcost + this.gcost;
@@ -37,35 +40,40 @@ class hex{
       fill('rgba(255,255,255,1)');
       polygon(this.x, this.y, size, 6);
     }else{
-      if(this.isCurrent == true){
-        fill('rgba(204,0,204,1)');
+      if(this.isParent == true){
+        fill('rgba(255,128,0,1)');
         polygon(this.x, this.y, size, 6);
       }else{
-        if (this.isStart == true){
-          fill('rgba(0,255,255,1)');
+        if(this.isCurrent == true){
+          fill('rgba(204,0,204,1)');
           polygon(this.x, this.y, size, 6);
         }else{
-          if (this.isEnd == true){
-            fill('rgba(255,255,0,1)');
+          if (this.isStart == true){
+            fill('rgba(0,255,255,1)');
             polygon(this.x, this.y, size, 6);
           }else{
-            if(this.closed == true){
-              fill('rgba(255,0,0,1)');
+            if (this.isEnd == true){
+              fill('rgba(255,255,0,1)');
               polygon(this.x, this.y, size, 6);
             }else{
-              if(this.open == true){
-                fill('rgba(0,255,0,1)')
+              if(this.closed == true){
+                fill('rgba(255,0,0,1)');
                 polygon(this.x, this.y, size, 6);
               }else{
-                fill('rgba(0,0,255,1)')
-                polygon(this.x, this.y, size, 6);
+                if(this.open == true){
+                  fill('rgba(0,255,0,1)')
+                  polygon(this.x, this.y, size, 6);
+                }else{
+                  fill('rgba(0,0,255,1)')
+                  polygon(this.x, this.y, size, 6);
+                }
               }
             }
           }
         }
       }
     }
-  }
+  } 
 }
 
 class hexGrid{
@@ -125,6 +133,11 @@ class hexGrid{
       if (this.hexesOpen.includes(neighbours[n]) || this.hexesClosed.includes(neighbours[n])){
       }else{
         this.hexesOpen.push(neighbours[n]);
+        this.hexes[neighbours[n].row][neighbours[n].col].lastParent = this.current;
+        for (var c = 0; c < this.current.parentList.length; c++){
+          this.hexes[neighbours[n].row][neighbours[n].col].parentList.push(this.current.parentList[c]);
+        }
+        this.hexes[neighbours[n].row][neighbours[n].col].parentList.push(this.current);
         this.hexes[neighbours[n].row][neighbours[n].col].open = true;
       }
     }
@@ -134,6 +147,19 @@ class hexGrid{
       }
     }
     this.hexes[this.current.row][this.current.col].isCurrent = true;
+    for (i = 0; i < canvasDiag; i++){
+      for (j = 0; j <canvasDiag; j++){
+        if(this.hexes[i][j].isCurrent == false){
+            this.hexes[i][j].isParent = false;
+           }else{
+             for (var p = 0; p < this.hexes[i][j].parentList.length; p++ ){
+               this.hexes[this.hexes[i][j].parentList[p].row][this.hexes[i][j].parentList[p].col].isParent = true;
+             }
+             i = j = canvasDiag;
+             break;
+           }
+      }
+    }
   }
   removeCurrent(){
     if (this.hexesClosed.includes(this.current)){
@@ -202,17 +228,17 @@ function draw() {
       }
     if (frameCount % 2 == 1 && startClicked == true){ //to delay this function so that start is in open
       if(theGrid.current.isEnd == false){
-        try{
+        //try{
           theGrid.updateCurrent();
           theGrid.removeCurrent();
           console.log(theGrid.hexesOpen);
           //console.log(theGrid.hexesClosed);
         }
-        catch(TypeError){
-          console.log("theres been TypeError")
-        }
+        //catch(TypeError){
+         // console.log("theres been TypeError")
+        //}
 
-      }
+      //}
     }
   }
 }
