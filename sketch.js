@@ -198,13 +198,13 @@ function setup() {
   startButton.size(100,100);
   startButton.position(windowWidth - 100,0);
   startButton.mousePressed(startPressed);
-  startX = createInput('start x coord')
+  startX = createInput('start x coord (1-28)')
   startX.position(windowWidth - 500,0)
-  startY = createInput('start y coord')
+  startY = createInput('start y coord(1-28)')
   startY.position(windowWidth - 500, 50)
-  endX = createInput('end x coord');
+  endX = createInput('end x coord(1-28)');
   endX.position(windowWidth - 500, 200);
-  endY = createInput('end y coord');
+  endY = createInput('end y coord(1-28))');
   endY.position(windowWidth - 500, 250);
   submitButton = createButton('submit');
   submitButton.position( windowWidth - 500, 300);
