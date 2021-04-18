@@ -1,11 +1,11 @@
-size = 20;
-w = size * Math.sqrt(3);
-h = size * 2;
-canvasDiag = 30;
-var startClicked = false;
-var started = false;
+let size = 20;
+let w = size * Math.sqrt(3);
+let h = size * 2; // Declaring size of the hexagons
+let canvasDiag = 30; // Declaring number of hexagons
+let startClicked = false;
+let started = false;
 
-class hex{
+class hex{ //The class of each hexagon
   constructor(row,col,x,y,size){
     this.row = row;
     this.col = col;
@@ -76,7 +76,7 @@ class hex{
   } 
 }
 
-class hexGrid{
+class hexGrid{ // The class of the grid.
   constructor(){
     this.hexes = [];
     for (var i = 0; i < canvasDiag; i++){
