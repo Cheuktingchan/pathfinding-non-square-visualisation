@@ -35,8 +35,8 @@ class hex{ //The class of each hexagon
     this.hcost = p5.Vector.sub(this.pos,end).mag();
     this.fcost = this.hcost + this.gcost;
   }
-  show(){
-    if(this.isObstruction == true){
+  show(){ //changing the colors of the grid in an order that more important properties override less important.
+    if(this.isObstruction == true){ 
       fill('rgba(0,0,0,1)');
       polygon(this.x, this.y, size, 6);
     }else{
@@ -78,7 +78,7 @@ class hex{ //The class of each hexagon
 
 class hexGrid{ // The class of the grid.
   constructor(){
-    this.hexes = [];
+    this.hexes = []; // List of all the hexagons in the grid.
     for (var i = 0; i < canvasDiag; i++){
       this.hexes[i] = [];
     }
@@ -97,7 +97,7 @@ class hexGrid{ // The class of the grid.
     this.hexes[row][col].open = false;
     this.hexes[row][col].closed = true;
   }
-  updateCurrent(){ //removes and from open and closes it
+  updateCurrent(){ //Search algorithm implementation
     var lowestfcost = this.hexesOpen[0].fcost;
     this.current = this.hexesOpen[0];
     for (var i = 0; i < this.hexesOpen.length; i++){
@@ -115,14 +115,14 @@ class hexGrid{ // The class of the grid.
     this.hexes[this.current.row][this.current.col].isCurrent = false;
     var neighbours = [];
     if (this.current.col % 2 == 0){
-      neighbours.push(this.hexes[this.current.row - 1][this.current.col - 1]);
+      neighbours.push(this.hexes[this.current.row - 1][this.current.col - 1]); // Even rows check for these adjacent nodes
       neighbours.push(this.hexes[this.current.row][this.current.col - 1]);
       neighbours.push(this.hexes[this.current.row - 1][this.current.col]);
       neighbours.push(this.hexes[this.current.row + 1][this.current.col]);
       neighbours.push(this.hexes[this.current.row - 1][this.current.col + 1]);
       neighbours.push(this.hexes[this.current.row][this.current.col + 1]);
         }else{
-          neighbours.push(this.hexes[this.current.row][this.current.col - 1]);
+          neighbours.push(this.hexes[this.current.row][this.current.col - 1]); // Odd rows check for these adjacent nodes.
           neighbours.push(this.hexes[this.current.row + 1][this.current.col - 1]);
           neighbours.push(this.hexes[this.current.row - 1][this.current.col]);
           neighbours.push(this.hexes[this.current.row + 1][this.current.col]);
@@ -285,7 +285,7 @@ function saveStartEnd(){
   started = true;
 }
 
-function polygon(x, y, radius, npoints) {
+function polygon(x, y, radius, npoints) { // Drawing the hexagons at the angle I want
   let angle = TWO_PI / npoints;
   beginShape();
   for (let a = (PI/6); a < TWO_PI; a += angle) {
